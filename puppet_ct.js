@@ -36,9 +36,9 @@ const url = "https://www.concord-sots.ct.gov/CONCORD/online?sn=PublicInquiry&eid
                 // });
                 const frame = (await (await page.frames()[0].childFrames()))[1]; 
                 const text = await frame.$eval('#txtBusName', el => el);
-                text.value = 'House';
+                text.value = searchTerm;
+                console.log(text);
 
-                await frame.waitForNavigation('input[name="submittor"]');
                 const button = await frame.$eval('input[name=submittor]', el => el.outerHTML);
                 await page.click(button);
                 await page.waitForNavigation();
