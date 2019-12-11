@@ -125,9 +125,12 @@ for (let i = 0; i < 137; i++) {
                     } else {
                         const addressLines = $$('dd.registered_address ul.address_lines li').eq(0).text();
                         let addressArray = addressLines.split(',');
+                        if (addressArray[addressArray.length - 1] == ' USA') {
+                            addressArray = addressArray.filter(val => val !== ' USA');
+                        }
     
                         let address2 = '';
-                        if (addressArray.length == 6) {
+                        if (addressArray.length == 5) {
                             address2 = addressArray[1];
                             addressArray = addressArray.filter((line, idx) => idx !== 1);
                         }
