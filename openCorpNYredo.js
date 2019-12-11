@@ -5,16 +5,16 @@ const request = require("request");
 const parser = require("parse-address");
 const puppeteer = require("puppeteer");
 
-const companiesList = require("./company_names/pa_companies.json");
+const companiesList = require("./ny_companies.json");
 let finalResult = [];
 let count = 0;
 
-for (let i = 0; i < 1; i++) {
-    const company = 'LINCOLN LAND GROUP INC';
+for (let i = 500; i < 1000; i++) {
+    const company = companiesList[i];
     console.log(company);
     const searchTerm = company.replace(" ", "%20");
 
-    const siteUrl = `https://opencorporates.com/companies/us_pa?q=${searchTerm}&utf8=%E2%9C%93`;
+    const siteUrl = `https://opencorporates.com/companies/us_ny?q=${searchTerm}&utf8=%E2%9C%93`;
     request(
         {
             method: "GET",
@@ -154,30 +154,30 @@ for (let i = 0; i < 1; i++) {
                                 let person = { company: company };
                                 const addressLines = $$("dd.registered_address ul.address_lines li").eq(0).text();
                                 let addressArray = addressLines.split(",");
-                                // if (addressArray.length == 1 || addressArray.length < 3) {
+                                if (addressArray.length == 1 || addressArray.length < 3) {
 
-                                //     $$("dd.registered_address ul.address_lines li").each((idx, el) => {
-                                //         if (idx < 4) {
-                                //             if (!isNaN($$(el).text())) {
-                                //                 person['zipcode'] = $$(el).text();
-                                //             }
-                                //             if (idx == 0) {
-                                //                 if (addressArray.length == 2) {
-                                //                     const addressLine = $$(el).text();
-                                //                     person['address'] = addressLine.split(',')[0];
-                                //                     person['address2'] = addressLine.split(',')[1].trimLeft();
-                                //                 } else {
-                                //                     person['address'] = $$(el).text();
-                                //                 }
-                                //             }
-                                //             if (idx == 1) {
-                                //                 person['city'] = $$(el).text();
-                                //             }
+                                    $$("dd.registered_address ul.address_lines li").each((idx, el) => {
+                                        if (idx < 4) {
+                                            if (!isNaN($$(el).text())) {
+                                                person['zipcode'] = $$(el).text();
+                                            }
+                                            if (idx == 0) {
+                                                if (addressArray.length == 2) {
+                                                    const addressLine = $$(el).text();
+                                                    person['address'] = addressLine.split(',')[0];
+                                                    person['address2'] = addressLine.split(',')[1].trimLeft();
+                                                } else {
+                                                    person['address'] = $$(el).text();
+                                                }
+                                            }
+                                            if (idx == 1) {
+                                                person['city'] = $$(el).text();
+                                            }
 
-                                //         }
-                                //     });
-                                //     person['state'] = 'NY';
-                                // } else {
+                                        }
+                                    });
+                                    person['state'] = 'NY';
+                                } else {
                                     if (addressArray[addressArray.length - 1] == " USA") {
                                         addressArray = addressArray.filter(val => val !== " USA");
                                     }
@@ -201,7 +201,7 @@ for (let i = 0; i < 1; i++) {
                                     person["city"] = parsedAddress.city;
                                     person["state"] = parsedAddress.state;
                                     person["zipcode"] = parsedAddress.zip;
-                                // }
+                                }
 
                                 let splitName = members[i].name.split(" ");
                                 if (splitName.length == 2) {
@@ -233,11 +233,11 @@ for (let i = 0; i < 1; i++) {
             const people = await getData();
             // console.log(people);
             finalResult.push(people);
-            if (finalResult.length == 1) {
+            if (finalResult.length == 1000) {
                 finalResult = finalResult.filter(val => (val.length > 1 || val[0].length > 0) && val != 'No Data Found');
                 console.log("writing ...");
                 let finalJson = JSON.stringify(finalResult);
-                fs.writeFileSync(`./PA2.json`, finalJson, "utf-8");
+                fs.writeFileSync(`./NYRedo1.json`, finalJson, "utf-8");
             }
         } //function within request
     ); //request()
