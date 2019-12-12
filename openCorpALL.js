@@ -1,21 +1,25 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
 const fs = require("fs");
-const request = require("request");
+const request = require("request-promise");
 const parser = require("parse-address");
 const puppeteer = require("puppeteer");
+const pLimit = require('p-limit');
+const limit = pLimit(50);
 
-const companiesList = require("./company_names/ct_companies.json");
+const companiesList = require("./company_names/all_with_states.json");
 let finalResult = [];
 let count = 0;
 
-for (let i = 0; i < 137; i++) {
-    const company = companiesList[i];
-    console.log(company);
-    const searchTerm = company.replace(" ", "%20");
 
-    const siteUrl = `https://opencorporates.com/companies/us_ct?q=${searchTerm}&utf8=%E2%9C%93`;
-    request(
+for (let i = 0; i < 1; i++) {
+    const company = companiesList[i][0];
+    const searchTerm = company.replace(/ /g, "+");
+    const state = companiesList[i][1].toLowerCase();
+
+    const siteUrl = `https://opencorporates.com/companies/us_ny?q=${searchTerm}&utf8=%E2%9C%93`;
+    console.log(siteUrl)
+    limit(() => request(
         {
             method: "GET",
             url:
@@ -24,8 +28,8 @@ for (let i = 0; i < 137; i++) {
             headers: {
                 Accept: "application/json"
             }
-        },
-        async () => {
+        })
+        .then(async () => {
             const fetchData = async site => {
                 const result = await axios.get(site);
                 return cheerio.load(result.data);
@@ -233,14 +237,18 @@ for (let i = 0; i < 137; i++) {
             const people = await getData();
             // console.log(people);
             finalResult.push(people);
-            if (finalResult.length == 137) {
+            console.log(finalResult.length);
+            if (finalResult.length == 1) {
                 finalResult = finalResult.filter(val => (val.length > 1 || val[0].length > 0) && val != 'No Data Found');
                 console.log("writing ...");
                 let finalJson = JSON.stringify(finalResult);
-                fs.writeFileSync(`./CTO.json`, finalJson, "utf-8");
+                fs.writeFileSync(`./All_except_fl_nj.json`, finalJson, "utf-8");
             }
-        } //function within request
-    ); //request()
+        }) //then block
+        .catch(e => {
+            console.log('error ' + e);
+        })
+    ); //limit()
 } //for loop
 
 // if (officers) {

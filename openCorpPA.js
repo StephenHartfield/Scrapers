@@ -10,7 +10,7 @@ let finalResult = [];
 let count = 0;
 
 for (let i = 0; i < 1; i++) {
-    const company = 'LINCOLN LAND GROUP INC';
+    const company = 'CITIMORTGAGE INC';
     console.log(company);
     const searchTerm = company.replace(" ", "%20");
 
@@ -153,6 +153,7 @@ for (let i = 0; i < 1; i++) {
 
                                 let person = { company: company };
                                 const addressLines = $$("dd.registered_address ul.address_lines li").eq(0).text();
+                                
                                 let addressArray = addressLines.split(",");
                                 // if (addressArray.length == 1 || addressArray.length < 3) {
 
@@ -178,31 +179,34 @@ for (let i = 0; i < 1; i++) {
                                 //     });
                                 //     person['state'] = 'NY';
                                 // } else {
-                                    if (addressArray[addressArray.length - 1] == " USA") {
-                                        addressArray = addressArray.filter(val => val !== " USA");
-                                    }
+                                if (addressArray[addressArray.length - 1] == " USA") {
+                                    addressArray = addressArray.filter(val => val !== " USA");
+                                }
 
-                                    let address2 = "";
-                                    if (addressArray.length == 5) {
-                                        address2 = addressArray[1];
-                                        addressArray = addressArray.filter((line, idx) => idx !== 1);
-                                    }
+                                let address2 = "";
+                                if (addressArray.length == 5) {
+                                    address2 = addressArray[1];
+                                    addressArray = addressArray.filter((line, idx) => idx !== 1);
+                                }
 
+                                if (addressLines.indexOf('CORPORATION') > -1) {
+                                    break;
+                                } else {
                                     const parsedAddress = parser.parseLocation(addressArray.join());
                                     person["address"] =
-                                        parsedAddress.number +
+                                        parsedAddress.number || '' +
                                         " " +
-                                        parsedAddress.street +
+                                        parsedAddress.street || '' +
                                         " " +
                                         parsedAddress.type || "";
                                     if (address2) {
                                         person["address2"] = address2.trimLeft();
                                     }
-                                    person["city"] = parsedAddress.city;
-                                    person["state"] = parsedAddress.state;
-                                    person["zipcode"] = parsedAddress.zip;
-                                // }
-
+                                    person["city"] = parsedAddress.city || '';
+                                    person["state"] = parsedAddress.state || '';
+                                    person["zipcode"] = parsedAddress.zip || '';
+                                    // }
+                                }
                                 let splitName = members[i].name.split(" ");
                                 if (splitName.length == 2) {
                                     person["firstName"] = splitName[0];

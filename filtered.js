@@ -1,11 +1,12 @@
-const companiesList = require("./output_data/PA1.json");
+const companiesList = require("./LargeFLOutput.json");
 const fs = require("fs");
 
-let finalResult = companiesList.reduce(function (a, b) { return a.concat(b); })
+// let finalResult = companiesList.reduce(function (a, b) { return a.concat(b); })
 
 function filterCompanies(val) {
     if (val.firstName && val.lastName) {
-        if (val.firstName.indexOf('LLC') == - 1 && val.lastName.indexOf('LLC') == - 1 && val.lastName.indexOf('LCC') == -1
+        if (val.firstName.indexOf('THE') == -1 
+            && val.firstName.indexOf('LLC') == - 1 && val.lastName.indexOf('LLC') == - 1 
             && val.firstName.indexOf('INC') == - 1 && val.lastName.indexOf('INC') == - 1
             && val.firstName.indexOf('LLP') == - 1 && val.lastName.indexOf('LLP') == - 1) {
             return true;
@@ -24,10 +25,18 @@ function filterOnEach(val) {
     }
 }
 
-finalResult = finalResult.map(val => filterOnEach(val));
+finalResult = companiesList.map(val => filterOnEach(val));
 finalResult = finalResult.filter(val => val != '');
+finalResult = finalResult.map(val => val.map(individual => {
+    if(individual.status) {
+        return ({
+            ...individual,
+            status: individual.status.replace(/Title/g, '').trimLeft()
+        });
+    }
+}));
 
 let finalJson = JSON.stringify(finalResult);
-fs.writeFileSync(`./PA_people.json`, finalJson, "utf-8");
+fs.writeFileSync(`./FL_filtered_final.json`, finalJson, "utf-8");
 
 

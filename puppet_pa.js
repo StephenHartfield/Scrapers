@@ -42,18 +42,18 @@ function parseAddress(splitAddress) {
     }
 }
 
-const companies = require('./pa-companies.json');
-const result = [];
+const companies = require('./company_names/pa_companies.json');
+let result = [];
 (async () => {
     
     const url = `https://www.corporations.pa.gov/Search/corpsearch`;
     const browser = await puppeteer.launch();
     try {
-        for (let i = 500; i < 700; i++) {
+        for (let i = 0; i < 1; i++) {
             const idx = i;
             let searchTerm =
-              // 'D E & S PROPERTIES INC'
-                companies[i];
+              'NVR INC'
+                // companies[i];
             request(
                 {
                     method: 'GET',
@@ -158,7 +158,7 @@ const result = [];
                                 });
                                 if (values.length > 0) {
                                     let person = {};
-                                    let people = [];
+                                    let innerPeople = [];
                                     for (let i = 0; i < values.length; i++) {
                                         person["company"] = searchTerm;
                                         if (values[i] === "Name") {
@@ -216,10 +216,11 @@ const result = [];
                                                 }
                                             }
                                         }
+                                        innerPeople.push(person);
+                                        person = {};
                                     }
-                                    people.push(person);
-                                    person = {};
-                                    return people;
+                                    console.log(innerPeople);
+                                    return innerPeople;
                                 } else {
                                     person = {company: searchTerm};
                                     const t1Values = await page.evaluate(() => {
@@ -258,11 +259,12 @@ const result = [];
                         result.push(people);
                         people = [];
                     } else {
-                        result.push({company: searchTerm});
+                        result.push('No Data Found');
                     }
-                    if (result.length == 200) {
+                    if (result.length == 1) {
                         console.log("writing ...");
                         setTimeout(() => {
+                            result = result.filter(val => val != 'No Data Found');
                             let finalJson = JSON.stringify(result);
                             fs.writeFileSync("./PAtest.json", finalJson, "utf-8");
                             setTimeout(() => browser.close(), 1000);

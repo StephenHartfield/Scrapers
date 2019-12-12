@@ -1,26 +1,29 @@
 const axios = require("axios");
 const cheerio = require('cheerio');
 const fs = require('fs');
-const request = require('request');
+const request = require('request-promise');
+const pLimit = require('p-limit');
 
-const companiesList = require('./leftoverco.s.json');
+const companiesList = require('./company_names/more_fl_comps');
 let finalResult = [];
 let count = 0;
-companiesList.map((company, idx) => {
-// const searchTerm = 'investment';
-    const searchTerm = company.replace(' ', '%20');
+
+const limit = pLimit(50);
+const input = companiesList.map((company, idx) => {
+
+    const searchTerm = company.replace(/ /g, '%20');
 
     const siteUrl = `http://search.sunbiz.org/Inquiry/CorporationSearch/SearchResults?inquiryType=EntityName&searchNameOrder=HOOSEOZ1&searchTerm=${searchTerm}`;
         
-    request(
+    limit(() => request(
         {
             method: 'GET',
             url: 'http://api.scraperapi.com/?api_key=54e9b0fb54b2de5c04096c232e2ae5ab&url=' + siteUrl,
             headers: {
                 Accept: 'application/json',
             },
-        },
-        async () => {
+        })
+        .then(async () => {
 
             const fetchData = async (site) => {
                 const result = await axios.get(site);
@@ -58,8 +61,6 @@ companiesList.map((company, idx) => {
 
                 //need to determine best match for user - remove inactive and duplicates
                 const activeEntities = entitiesArray.filter((entity, idx) => entity.status == 'Active' && entitiesArray.indexOf(entity) === idx);
-
-                console.log(activeEntities.length);
 
                 //narrowing it down to closest match
                 // let matched;
@@ -138,16 +139,29 @@ companiesList.map((company, idx) => {
                 // console.log(final);
                 return final;
             };
-        // scrape();
-        const returnedFinal = await scrape();
-        finalResult.push(returnedFinal);
-
-        if (idx === companiesList.length - 1) {
-            setTimeout(() => {
-                console.log('writing ...');
-                let finalJson = JSON.stringify(finalResult);
-                fs.writeFileSync('./FL2.json', finalJson, 'utf-8');
-            }, 3000);
-        }
-    });
+            // scrape();
+            const returnedFinal = await scrape();
+            finalResult.push(returnedFinal);
+            if(idx == companiesList.length-1) {
+                setTimeout(() => {
+                    console.log('writing ...');
+                    let finalJson = JSON.stringify(finalResult);
+                    fs.writeFileSync('./LargeFLOutput.json', finalJson, 'utf-8');
+                }, 2000);
+            }
+        })
+        .catch((e) => {
+            console.log('err ' + e);
+        })
+    );
 });
+
+
+// (async () => {
+//     console.log('begin waiting ...')
+//     const result = await Promise.all(input);
+
+//     console.log('writing ...');
+//     let finalJson = JSON.stringify(result);
+//     fs.writeFileSync('./FL2test.json', finalJson, 'utf-8');
+// })
