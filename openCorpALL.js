@@ -17,7 +17,7 @@ for (let i = 0; i < 1; i++) {
     const searchTerm = company.replace(/ /g, "+");
     const state = companiesList[i][1].toLowerCase();
 
-    const siteUrl = `https://opencorporates.com/companies/us_ny?q=${searchTerm}&utf8=%E2%9C%93`;
+    const siteUrl = `https://opencorporates.com/companies/us_${state}?q=${searchTerm}&utf8=%E2%9C%93`;
     console.log(siteUrl)
     limit(() => request(
         {
