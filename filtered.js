@@ -5,7 +5,7 @@ const fs = require("fs");
 
 function filterCompanies(val) {
     if (val.firstName && val.lastName) {
-        if (val.firstName.indexOf('THE') == -1 
+        if (val.firstName.indexOf('THE') == -1 && val.lastName.indexOf('CORPORATION') == - 1
             && val.firstName.indexOf('LLC') == - 1 && val.lastName.indexOf('LLC') == - 1 
             && val.firstName.indexOf('INC') == - 1 && val.lastName.indexOf('INC') == - 1
             && val.firstName.indexOf('LLP') == - 1 && val.lastName.indexOf('LLP') == - 1) {
