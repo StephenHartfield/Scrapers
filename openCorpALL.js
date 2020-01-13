@@ -7,6 +7,8 @@ const pLimit = require('p-limit');
 const sleep = require('sleep');
 const limit = pLimit(50);
 
+//12 to 13 and 28 to 29
+
 const companiesList = require("./PA_companies.json");
 let finalResult = [];
 let count = 0;
@@ -18,8 +20,8 @@ async function scrape() {
     for (let i = loopCount; i < (loopCount + 50); i++) {
         console.log(i);
         if (i <= companiesList.length - 1) {
-            const company = 
-                companiesList[i][0];
+            const company = 'CIP INC';
+                // companiesList[i][0];
             const searchTerm = company.replace(/ /g, "+");
             // const compState = companiesList[idx][1].toLowerCase();
             const siteUrl = `https://opencorporates.com/companies/us_pa?q=${searchTerm}&utf8=%E2%9C%93`;
@@ -151,7 +153,7 @@ async function scrape() {
                                         let person = { company: company };
                                         const addressLines = $$("dd.registered_address ul.address_lines li").eq(0).text();
                                         let addressArray = [];
-                                       
+                                        console.log(addressLines);
                                         addressArray = addressLines.split(',');
                                         
                                         // if (addressArray.length < 3) {
@@ -179,16 +181,20 @@ async function scrape() {
 
                                         // }
                                         // else {
-                                        if (addressArray[addressArray.length - 1] == " USA") {
-                                                addressArray = addressArray.filter(val => val !== " USA");
-                                            }
-                                            let address2 = "";
+                                        if (isNaN(addressArray[addressArray.length - 1])) {
+                                            addressArray.pop();
+                                        }
+                                        let address2 = "";
+                                        console.log(addressArray);
+                                        console.log(addressArray[0].indexOf('#'));
                                             if (addressArray.length == 5) {
                                                 address2 = addressArray[1];
                                                 addressArray = addressArray.filter((line, idx) => idx !== 1);
                                             }
-                                            const parsedAddress = parser.parseLocation(addressArray.join());
-                                        // if (parsedAddress) {
+                                        
+                                        const parsedAddress = parser.parseLocation(addressArray.join());
+                                        console.log(parsedAddress);
+                                        if (parsedAddress) {
                                             person["address"] =
                                                 parsedAddress.number +
                                                 " " +
@@ -203,7 +209,7 @@ async function scrape() {
                                             person["zipcode"] = parsedAddress.zip;
                                         // } else {
 
-                                        // }
+                                        }
                                         let splitName = members[i].name.split(" ");
                                         if (splitName.length == 2) {
                                             person["firstName"] = splitName[0];
@@ -250,7 +256,7 @@ async function scrape() {
                             finalResult = finalResult.filter(val => (val.length > 1 || val[0].length > 0) && val != 'No Data Found');
                             console.log("writing ...");
                             let finalJson = JSON.stringify(finalResult);
-                            fs.writeFileSync(`./AllNY.json`, finalJson, "utf-8");
+                            fs.writeFileSync(`./AllPA.json`, finalJson, "utf-8");
                         }
                     } catch (e) {
                         console.log('err ' + e);
